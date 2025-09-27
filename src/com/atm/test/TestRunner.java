@@ -35,7 +35,7 @@ public class TestRunner {
 
         // Get the dummy account which has a balance of 1500.0
         try {
-            Account account = bankService.getAccount(new Card("1234-5678-9876-5432", "John Doe"));
+            Account account = bankService.getAccount(new Card("5555-4444-3333-2222", "John Doe"));
             double initialBalance = account.getBalance();
             double amountToWithdraw = 500.0;
 
@@ -66,9 +66,9 @@ public class TestRunner {
         ReceiptPrinter printer = new ReceiptPrinter();
 
         try {
-            Account account = bankService.getAccount(new Card("1234-5678-9876-5432", "John Doe"));
+            Account account = bankService.getAccount(new Card("5555-4444-3333-2222", "John Doe"));
             double initialBalance = account.getBalance();
-            double amountToWithdraw = 2000.0; // More than the initial 1500.0
+            double amountToWithdraw = 5000.0; // More than the initial 3500.0
 
             System.out.println("Initial Balance: " + initialBalance);
             System.out.println("Attempting to withdraw: " + amountToWithdraw);
