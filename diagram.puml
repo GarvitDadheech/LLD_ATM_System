@@ -1,0 +1,128 @@
+@startuml ATM System Design
+
+' Style and layout
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+hide empty members
+
+title ATM System Class Diagram
+
+' --- Packages ---
+package "com.atm" {
+    class ATMOrchestrator
+}
+
+package "com.atm.hardware" {
+    interface Keyboard
+    class DigitalKeyboard
+    class PhysicalKeyboard
+    class CardReader
+    class ReceiptPrinter
+    class CashDispenser << (S,green) Singleton >>
+}
+
+package "com.atm.model" {
+    class Card
+    class Account
+    class Receipt
+}
+
+package "com.atm.service" {
+    interface BankService
+    class RealBankService
+    class RemoteBankProxy
+    interface DispenseStrategy
+    class DefaultDispenseStrategy
+}
+
+package "com.atm.service.validation" {
+    interface CardValidationStrategy
+    class CardFormatValidationStrategy
+    class BlacklistValidationStrategy
+}
+
+package "com.atm.transaction" {
+    abstract class Transaction
+    class WithdrawalTransaction
+}
+
+package "com.atm.state" {
+    interface State
+    class IdleState
+    class PinEntryState
+    class TransactionSelectionState
+    class TransactionCompleteState
+}
+
+package "com.atm.factory" {
+    interface ATMFactory
+    class DefaultATMFactory
+}
+
+package "com.atm.exception" {
+    class TransactionException
+    class InvalidCardException
+    class InsufficientFundsException
+    class HardwareFailureException
+}
+
+package "com.atm.test" {
+    class TestRunner
+}
+
+
+' --- Relationships ---
+
+' Composition: ATMOrchestrator is composed of its parts
+ATMOrchestrator o-- "1" CardReader
+ATMOrchestrator o-- "1" Keyboard
+ATMOrchestrator o-- "1" BankService
+ATMOrchestrator o-- "1" CashDispenser
+ATMOrchestrator o-- "1" ReceiptPrinter
+
+' Abstract Factory Pattern
+ATMOrchestrator ..> ATMFactory : uses
+ATMFactory <|.. DefaultATMFactory
+DefaultATMFactory ..> RemoteBankProxy : creates
+DefaultATMFactory ..> DigitalKeyboard : creates
+note on link of ATMFactory: Abstract Factory Pattern
+
+' State Pattern
+ATMOrchestrator o--> "1" State : currentState
+State <|.. IdleState
+State <|.. PinEntryState
+State <|.. TransactionSelectionState
+State <|.. TransactionCompleteState
+note on link of State: State Pattern
+
+' Card Validation Strategy Pattern
+RealBankService o--> "*" CardValidationStrategy
+CardValidationStrategy <|.. CardFormatValidationStrategy
+CardValidationStrategy <|.. BlacklistValidationStrategy
+note on link of CardValidationStrategy: Strategy Pattern
+
+' Dispense Strategy Pattern
+CashDispenser o--> "1" DispenseStrategy : strategy
+DispenseStrategy <|.. DefaultDispenseStrategy
+note on link of DispenseStrategy: Strategy Pattern
+
+' Proxy Pattern
+BankService <|.. RealBankService
+BankService <|.. RemoteBankProxy
+RemoteBankProxy --> "1" RealBankService : delegates to
+note on link of RemoteBankProxy: Proxy Pattern
+
+' Exception Hierarchy
+TransactionException <|-- InvalidCardException
+TransactionException <|-- InsufficientFundsException
+RuntimeException <|-- HardwareFailureException
+
+' Other Dependencies
+BankService ..> InvalidCardException : throws
+BankService ..> InsufficientFundsException : throws
+CardValidationStrategy ..> InvalidCardException : throws
+CashDispenser ..> HardwareFailureException : throws
+Transaction ..> Account
+WithdrawalTransaction ..> Receipt : creates
+
+@enduml
